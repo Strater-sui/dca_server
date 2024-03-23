@@ -1,0 +1,1 @@
+ALTER TABLE "escrows" ADD COLUMN "initial_shared_version" integer NOT NULL;

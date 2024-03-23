@@ -1,0 +1,151 @@
+{
+  "id": "32f1b5b0-f9d3-4c76-9db7-1b1a5a3b2da9",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "5",
+  "dialect": "pg",
+  "tables": {
+    "escrows": {
+      "name": "escrows",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "object_id": {
+          "name": "object_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type_x": {
+          "name": "type_x",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type_y": {
+          "name": "type_y",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner": {
+          "name": "owner",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "frequency": {
+          "name": "frequency",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "divided_amount": {
+          "name": "divided_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_claimed": {
+          "name": "last_claimed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "filled_orders": {
+          "name": "filled_orders",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "balance_x": {
+          "name": "balance_x",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "balance_y": {
+          "name": "balance_y",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decimals_x": {
+          "name": "decimals_x",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decimals_y": {
+          "name": "decimals_y",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price_enabled": {
+          "name": "price_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "min_price": {
+          "name": "min_price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_price": {
+          "name": "max_price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "deposit_time": {
+          "name": "deposit_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_time": {
+          "name": "end_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_spent": {
+          "name": "total_spent",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_withdrawn_amount": {
+          "name": "total_withdrawn_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "executed_time": {
+          "name": "executed_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

@@ -53,7 +53,7 @@ export class DCAServer {
   private bucketClient: BucketClient = new BucketClient();
   public prices: { [key: string]: number } | null = null;
   public escrows: Record<string, Escrow> = {};
-  public executingOrders: string[] = [];
+  public executingOrders: Set<string> = new Set();
 
   constructor(keypair: Keypair) {
     const sql: NeonQueryFunction<boolean, boolean> = neon(
@@ -75,7 +75,7 @@ export class DCAServer {
   async loadDatabase() {
     logger.info("loading database");
     this.escrows = {};
-    this.executingOrders = [];
+    this.executingOrders = new Set();
     const res = await this.db.select().from(schema.escrows);
 
     res.forEach(
@@ -104,14 +104,7 @@ export class DCAServer {
   }
 
   async checkpoint() {
-    let startTime = new Date().getTime();
-    logger.info(`Time: ${startTime}`);
-
     this.escrows = {};
-    this.executingOrders = [];
-
-    const currentTime = Math.floor(new Date().getTime() / 1000);
-    logger.info({ currentTime });
 
     let orderPromises: any[] = [];
     (
@@ -128,15 +121,11 @@ export class DCAServer {
       // ),
       // )
       .forEach((data) => {
-        const now = new Date().getTime() / 1000;
-        if (!this.executingOrders.includes(data.objectID)) {
-          if (
-            data.endTime == data.lastClaimed &&
-            data.executedTime < now &&
-            data.endTime > now
-          ) {
+        const now = Math.floor(new Date().getTime() / 1000);
+        if (!this.executingOrders.has(data.objectID)) {
+          if (data.executedTime <= now && data.endTime >= now) {
             //execute and close last order
-            this.executingOrders.push(data.objectID);
+            this.executingOrders.add(data.objectID);
             orderPromises.push(
               limit(() =>
                 this.moveCallExectueOrder(
@@ -159,22 +148,6 @@ export class DCAServer {
             //       ),
             //     ),
             //   );
-          } else if (
-            data.executedTime < now &&
-            data.lastClaimed < now &&
-            data.endTime > now
-          ) {
-            // executeOrder
-            this.executingOrders.push(data.objectID);
-            orderPromises.push(
-              limit(() =>
-                this.moveCallExectueOrder(
-                  data.objectID,
-                  COIN_SYMBOLS[data.typeX],
-                  COIN_SYMBOLS[data.typeY],
-                ),
-              ),
-            );
           }
         }
       });
@@ -187,90 +160,7 @@ export class DCAServer {
       .select({ count: count() })
       .from(schema.escrows);
     logger.info(countRes[0].count, "total orders");
-    logger.info({ pendinf: this.executingOrders }, "executingOrders");
-  }
-
-  async loop(duration: number, delay: number) {
-    let startTime = new Date().getTime();
-    logger.info(`Start at: ${startTime}`);
-
-    this.escrows = {};
-    this.executingOrders = [];
-
-    while (new Date().getTime() - startTime < duration) {
-      const currentTime = Math.floor(new Date().getTime() / 1000);
-      logger.info({ currentTime });
-
-      let orderPromises: any[] = [];
-      (
-        await this.db
-          .select()
-          .from(schema.escrows)
-          .where(ne(schema.escrows.balanceX, 0))
-      )
-        // .where(
-        //   and(
-        // filter valid order by checking expiration & executedTime
-        //   lte(schema.escrows.lastClaimed, currentTime),
-        //   lte(schema.escrows.executedTime, currentTime),
-        // ),
-        // )
-        .forEach((data) => {
-          const now = new Date().getTime() / 1000;
-          if (!this.executingOrders.includes(data.objectID)) {
-            if (data.endTime == data.lastClaimed && data.executedTime < now) {
-              //execute and close last order
-              this.executingOrders.push(data.objectID);
-              orderPromises.push(
-                limit(() =>
-                  this.moveCallExectueOrder(
-                    data.objectID,
-                    COIN_SYMBOLS[data.typeX],
-                    COIN_SYMBOLS[data.typeY],
-                    false,
-                  ),
-                ),
-              );
-              // } else if (data.endTime < now) {
-              //   // close order
-              //   this.executingOrders.push(data.objectID);
-              //   orderPromises.push(
-              //     limit(() =>
-              //       this.moveCallCloseEscrow(
-              //         data.objectID,
-              //         COIN_SYMBOLS[data.typeX],
-              //         COIN_SYMBOLS[data.typeY],
-              //       ),
-              //     ),
-              //   );
-            } else if (data.executedTime < now && data.lastClaimed < now) {
-              // executeOrder
-              this.executingOrders.push(data.objectID);
-              orderPromises.push(
-                limit(() =>
-                  this.moveCallExectueOrder(
-                    data.objectID,
-                    COIN_SYMBOLS[data.typeX],
-                    COIN_SYMBOLS[data.typeY],
-                  ),
-                ),
-              );
-            }
-          }
-        });
-
-      if (!!orderPromises.length) await Promise.all(orderPromises);
-
-      logger.info({ orderPromises });
-
-      const countRes = await this.db
-        .select({ count: count() })
-        .from(schema.escrows);
-      logger.info(countRes[0].count, "total orders");
-      logger.info({ pendinf: this.executingOrders }, "executingOrders");
-
-      await setTimeout(() => {}, delay);
-    }
+    logger.info({ executing: this.executingOrders }, "executingOrders");
   }
 
   async socket() {
@@ -583,8 +473,8 @@ export class DCAServer {
     }
 
     //remove from loading tx
-    if (this.executingOrders.includes(escrow.id)) {
-      this.executingOrders.splice(this.executingOrders.indexOf(escrow.id), 1);
+    if (this.executingOrders.has(escrow.id)) {
+      this.executingOrders.delete(escrow.id);
       logger.info("delete");
     }
   }
@@ -635,7 +525,9 @@ export class DCAServer {
     } else {
       logger.error({ result }, "tx fail");
     }
-    if (this.executingOrders.includes(escrowId))
-      this.executingOrders.splice(this.executingOrders.indexOf(escrowId), 1);
+    if (this.executingOrders.has(escrow.id)) {
+      this.executingOrders.delete(escrow.id);
+      logger.info("delete");
+    }
   }
 }

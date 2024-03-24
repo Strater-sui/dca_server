@@ -23,10 +23,6 @@ async function run_scripts() {
       case "socket":
         dcaServer.socket();
         break;
-      case "loop":
-        // 10 min
-        dcaServer.loop(600 * 1000, 1000);
-        break;
       case "seed_database":
         await dcaServer.seedDatabase();
         break;
@@ -34,17 +30,16 @@ async function run_scripts() {
         await dcaServer.loadDatabase();
         break;
       case "place_order":
-      case "place_order":
         await dcaServer.moveCallplaceOrder(
           "USDC",
           "SUI",
           0.05, // when amount is below than 0.01, the route will fail
           30,
-          10,
+          3,
           // null,
           // null,
-          1 / 1.9,
-          1 / 1.7,
+          1 / 2,
+          1 / 1.5,
         );
         break;
       case "execute_order":

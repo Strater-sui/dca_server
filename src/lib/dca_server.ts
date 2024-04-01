@@ -23,18 +23,19 @@ import {
 } from "@mysten/sui.js/transactions";
 
 import {
-  dcaCloseVault,
+  dcaClaimFee,
+  dcaCloseEscrow,
   dcaExecuteOrder,
-  dcaFinalizeNewVault,
+  dcaFinalizeNewEscrow,
   dcaPlaceOrder,
   dcaRepayOrder,
-  totalVaults,
 } from "./operation";
 import { aftermathSwapByInput } from "./aftermath";
 import {
   databaseValueToEscrow,
   escrowToDatabaseValue,
   getEpochTime,
+  getFeeBalance,
   getTotalEscrows,
   suiObjectToEscrow,
 } from "../getter";
@@ -42,7 +43,7 @@ import { FLOAT_SCALING, extractErrorMessage } from "../utils";
 import { Escrow } from "../type";
 import { ne, eq, lte, and } from "drizzle-orm";
 import pLimit from "p-limit";
-import { COIN_SYMBOLS } from "../config";
+import { COIN_SYMBOLS, DCA_CONFIG } from "../config";
 import { date } from "drizzle-orm/mysql-core";
 const limit = pLimit(5);
 
@@ -270,7 +271,7 @@ export class DCAServer {
     if (!coinY) return undefined;
 
     // finalize the escrow
-    await dcaFinalizeNewVault(tx, {
+    await dcaFinalizeNewEscrow(tx, {
       inputType,
       outputType,
       escrow,
@@ -380,7 +381,7 @@ export class DCAServer {
 
     if (closed) {
       logger.info("closing order");
-      const [coinX, coinY] = dcaCloseVault(tx, {
+      const [coinX, coinY] = dcaCloseEscrow(tx, {
         inputType,
         outputType,
         escrow,
@@ -497,7 +498,11 @@ export class DCAServer {
       return;
     }
 
-    const [coinX, coinY] = dcaCloseVault(tx, { inputType, outputType, escrow });
+    const [coinX, coinY] = dcaCloseEscrow(tx, {
+      inputType,
+      outputType,
+      escrow,
+    });
     tx.transferObjects(
       [coinX, coinY],
       tx.pure(this.keypair.toSuiAddress(), "address"),
@@ -528,6 +533,41 @@ export class DCAServer {
     if (this.executingOrders.has(escrow.id)) {
       this.executingOrders.delete(escrow.id);
       logger.info("delete");
+    }
+  }
+  async moveCallClaimFee(type: COIN) {
+    let tx = new TransactionBlock();
+    const senderAddress = this.keypair.toSuiAddress();
+
+    const feeBalanceValue = await getFeeBalance(this.client, type);
+
+    const res = await this.client.getOwnedObjects({
+      owner: senderAddress,
+      filter: {
+        MatchAll: [{ StructType: DCA_CONFIG.DCA_CAP }],
+      },
+    });
+
+    const cap = res.data[0].data?.objectId;
+    if (!cap) {
+      throw new Error("No DCA_CAP object");
+    }
+    dcaClaimFee(tx, type, cap, feeBalanceValue);
+
+    const result = await this.client.devInspectTransactionBlock({
+      transactionBlock: tx,
+      sender: senderAddress,
+    });
+    if (result.effects.status.status == "success") {
+      let resp = await this.client.signAndExecuteTransactionBlock({
+        transactionBlock: tx,
+        signer: this.keypair,
+        requestType: "WaitForLocalExecution",
+        options: { showEffects: true },
+      });
+      logger.info({ resp }, "success Tx");
+    } else {
+      logger.error({ result }, "tx fail");
     }
   }
 }

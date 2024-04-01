@@ -1,14 +1,15 @@
 import { SuiClient, SuiObjectResponse } from "@mysten/sui.js/client";
 import { Escrow } from "./type";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { totalVaults } from "./lib/operation";
+import { feeBalance, totalEscrows } from "./lib/operation";
 import { normalizeStructTag, normalizeSuiAddress } from "@mysten/sui.js/utils";
 import { FLOAT_SCALING, bcs, extractGenericType } from "./utils";
 import { DECIMAL_PLACES, DUMMY_ADDRESS } from "./constants";
+import { COIN } from "bucket-protocol-sdk";
 
 export async function getTotalEscrows(client: SuiClient): Promise<Escrow[]> {
   let tx = new TransactionBlock();
-  totalVaults(tx);
+  totalEscrows(tx);
 
   let res = await client.devInspectTransactionBlock({
     sender: DUMMY_ADDRESS,
@@ -32,6 +33,28 @@ export async function getTotalEscrows(client: SuiClient): Promise<Escrow[]> {
     return objects
       .map(suiObjectToEscrow)
       .filter((obj) => obj !== null) as Escrow[];
+  }
+}
+export async function getFeeBalance(
+  suiClient: SuiClient,
+  type: COIN,
+): Promise<number> {
+  let tx = new TransactionBlock();
+  feeBalance(tx, type);
+  let res = await suiClient.devInspectTransactionBlock({
+    sender: DUMMY_ADDRESS,
+    transactionBlock: tx,
+  });
+
+  const returnValues = res?.results?.[0]?.returnValues;
+  if (!returnValues || returnValues?.[0][0][0] === 0) {
+    return 0;
+  } else {
+    const valueType = returnValues[0][1];
+    const valueData = returnValues[0][0];
+    return Number(
+      bcs.de(valueType, Uint8Array.from(valueData as Iterable<number>)),
+    );
   }
 }
 

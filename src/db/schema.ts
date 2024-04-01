@@ -15,6 +15,7 @@ export const escrows = pgTable("escrows", {
   typeX: text("type_x").notNull(),
   typeY: text("type_y").notNull(),
   owner: text("owner").notNull(),
+  extensions: text("extensions").notNull().array(),
   frequency: integer("frequency").notNull(),
   dividedAmount: integer("divided_amount").notNull(),
   lastClaimed: integer("last_claimed").notNull(),

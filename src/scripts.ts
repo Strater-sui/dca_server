@@ -48,6 +48,9 @@ async function run_scripts() {
       case "close_order":
         await dcaServer.moveCallCloseEscrow(escrowId, "USDC", "SUI");
         break;
+      case "claim_fee":
+        await dcaServer.moveCallClaimFee("USDC");
+        break;
       default:
         console.log("No valid action specified");
         break;

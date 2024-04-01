@@ -6,23 +6,26 @@ export const DCA_CONFIG = {
   PACKAGE_ID: DCA_PACKAGE,
   DCA_REG: {
     objectId:
-      "0xb46f596bdbf63424e1208ccb6adaa3049fed8da305a87cbf3b8a16c4763352fc",
-    initialSharedVersion: 79202161,
+      "0xe5c8b091708875100fe9780a0c401387ef2a81c5ece59c57b0827c41b8f46df2",
+    initialSharedVersion: 83663065,
     mutable: true,
   },
+  DCA_CAP: `${DCA_PACKAGE}::dca::DCACap`,
   targets: {
     placeOrder: `${DCA_PACKAGE}::dca::place_order` as MoveCallTarget,
-    finalizeNewVault:
-      `${DCA_PACKAGE}::dca::finalize_new_vault` as MoveCallTarget,
+    finalizeNewEscrow:
+      `${DCA_PACKAGE}::dca::finalize_new_escrow` as MoveCallTarget,
     executeOrder: `${DCA_PACKAGE}::dca::execute_order` as MoveCallTarget,
-    closeVault: `${DCA_PACKAGE}::dca::close_vault` as MoveCallTarget,
+    closeEscrow: `${DCA_PACKAGE}::dca::close_escrow` as MoveCallTarget,
     repayOrder: `${DCA_PACKAGE}::dca::repay_order` as MoveCallTarget,
+    claimFee: `${DCA_PACKAGE}::dca::claim_fee` as MoveCallTarget,
     updatePrice: `${DCA_PACKAGE}::dca::update_price` as MoveCallTarget,
     getEscrowRequiredAmount:
       `${DCA_PACKAGE}::dca::get_escrow_required_amount` as MoveCallTarget,
     getOutputX: `${DCA_PACKAGE}::dca::get_output_x` as MoveCallTarget,
     getOutputY: `${DCA_PACKAGE}::dca::get_output_y` as MoveCallTarget,
-    totalVaults: `${DCA_PACKAGE}::dca::total_vaults` as MoveCallTarget,
+    totalEscrows: `${DCA_PACKAGE}::dca::total_escrows` as MoveCallTarget,
+    feeBalance: `${DCA_PACKAGE}::dca::fee_balance` as MoveCallTarget,
   },
 };
 

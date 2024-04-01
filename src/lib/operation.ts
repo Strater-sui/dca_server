@@ -61,7 +61,7 @@ export function dcaPlaceOrder(
   return [escrow];
 }
 
-export function dcaFinalizeNewVault(
+export function dcaFinalizeNewEscrow(
   tx: TransactionBlock,
   inputs: {
     inputType: COIN;
@@ -73,7 +73,7 @@ export function dcaFinalizeNewVault(
 ) {
   const { escrow, receipt, coinY, inputType, outputType } = inputs;
   tx.moveCall({
-    target: DCA_CONFIG.targets.finalizeNewVault,
+    target: DCA_CONFIG.targets.finalizeNewEscrow,
     typeArguments: [COINS_TYPE_LIST[inputType], COINS_TYPE_LIST[outputType]],
     arguments: [tx.sharedObjectRef(DCA_CONFIG.DCA_REG), escrow, receipt, coinY],
   });
@@ -129,7 +129,7 @@ export function dcaRepayOrder(
   });
 }
 
-export function dcaCloseVault(
+export function dcaCloseEscrow(
   tx: TransactionBlock,
   inputs: {
     inputType: COIN;
@@ -139,7 +139,7 @@ export function dcaCloseVault(
 ): [TransactionObjectArgument, TransactionObjectArgument] {
   const { inputType, outputType, escrow } = inputs;
   const [coinX, coinY] = tx.moveCall({
-    target: DCA_CONFIG.targets.closeVault,
+    target: DCA_CONFIG.targets.closeEscrow,
     typeArguments: [COINS_TYPE_LIST[inputType], COINS_TYPE_LIST[outputType]],
     arguments: [
       tx.sharedObjectRef(DCA_CONFIG.DCA_REG),
@@ -152,11 +152,34 @@ export function dcaCloseVault(
   });
   return [coinX, coinY];
 }
+export function dcaClaimFee(
+  tx: TransactionBlock,
+  coinSymbol: COIN,
+  cap: string,
+  amount: number | TransactionArgument,
+) {
+  tx.moveCall({
+    target: DCA_CONFIG.targets.claimFee,
+    typeArguments: [COINS_TYPE_LIST[coinSymbol]],
+    arguments: [
+      tx.sharedObjectRef(DCA_CONFIG.DCA_REG),
+      tx.object(cap),
+      typeof amount === "number" ? tx.pure(amount, "u64") : amount,
+    ],
+  });
+}
 
 //Getter
-export function totalVaults(tx: TransactionBlock) {
+export function totalEscrows(tx: TransactionBlock) {
   tx.moveCall({
-    target: DCA_CONFIG.targets.totalVaults,
+    target: DCA_CONFIG.targets.totalEscrows,
+    arguments: [tx.sharedObjectRef(DCA_CONFIG.DCA_REG)],
+  });
+}
+export function feeBalance(tx: TransactionBlock, coin: COIN) {
+  tx.moveCall({
+    target: DCA_CONFIG.targets.feeBalance,
+    typeArguments: [COINS_TYPE_LIST[coin]],
     arguments: [tx.sharedObjectRef(DCA_CONFIG.DCA_REG)],
   });
 }

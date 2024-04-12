@@ -4,9 +4,8 @@ import { logger } from "./lib/logger";
 import {
   BucketClient,
 } from "bucket-protocol-sdk";
-import { CloseOrderEvent, DcaStatus, ErrorCode, ExecuteOrderEvent, OrderStatus, TransactionAction, TransactionStatus } from "./type";
+import { CloseOrderEvent, DcaStatus, ErrorCode, ExecuteOrderEvent } from "./type";
 
-import { PrismaClient } from "@prisma/client";
 import { closeOrder, executeOrder } from "./transactions";
 import { ORDER_CLOSED_EVENT, ORDER_EXECUTED_EVENT } from "./config";
 import { updateCloseEvent } from "./model/updateClose";

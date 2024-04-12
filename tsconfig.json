@@ -8,6 +8,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": "src",
+    "rootDir": "./src",    
     "moduleResolution": "node",
     "resolveJsonModule": true
   },

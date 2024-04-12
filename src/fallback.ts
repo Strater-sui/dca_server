@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { logger } from "./lib/logger";
 import { sleep } from "./utils";
 import { getCreatedOrders, getClosedOrders, getExecutedOrders } from "./sentio";
-import { DcaStatus, OrderStatus, TransactionAction, TransactionStatus } from "./type";
+import { TransactionAction } from "./type";
 import { updateCloseEvent } from "./model/updateClose";
 import { updateExecuteEvent } from "./model/updateExecute";
 import { updateEscrowEvent } from "./model/updateEscrow";

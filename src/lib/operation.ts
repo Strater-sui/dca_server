@@ -13,6 +13,7 @@ import {
 } from "bucket-protocol-sdk";
 import { COIN_METADATA, DCA_BUCKET_CONFIG, DCA_CONFIG } from "../config";
 import { SuiClient } from "@mysten/sui.js/client";
+import { DCA_CAP } from "../constants";
 
 export function dcaPlaceOrder(
   tx: TransactionBlock,
@@ -74,6 +75,7 @@ export function dcaExecuteOrder(
     typeArguments: [inputType, outputType],
     arguments: [
       tx.object(escrowId),
+      tx.object(DCA_CAP),
       tx.sharedObjectRef(ORACLE_OBJECT),
       tx.sharedObjectRef(CLOCK_OBJECT),
     ],
@@ -97,6 +99,7 @@ export function dcaRepayOrder(
     typeArguments: [inputType, outputType],
     arguments: [
       tx.sharedObjectRef(DCA_CONFIG.DCA_REG),
+      tx.object(DCA_CAP),
       tx.object(escrowId),
       receipt,
       coinOut,

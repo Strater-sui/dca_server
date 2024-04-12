@@ -125,6 +125,7 @@ export const executeOrder = async (
                 };
             }
 
+            console.log(result.effects.status.error);
             logger.error({ action: "executeOrder", escrowId, error: errorCode },);
         }
     }

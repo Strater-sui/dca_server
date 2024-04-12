@@ -40,7 +40,7 @@ export async function getTransaction(
         options: {
           showEffects: true,
           showEvents: true,
-        }
+        },
       });
 
       return res;

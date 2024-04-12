@@ -49,7 +49,7 @@ import prisma from "./lib/prisma";
             if (_event) {
               let event = _event.parsedJson as EscrowOrderEvent;
               event.input_type = COINS_TYPE_LIST[input as COIN];
-              event.output_type = COINS_TYPE_LIST[input as COIN];
+              event.output_type = COINS_TYPE_LIST[output as COIN];
               await updateEscrowEvent(prisma, event, digest, Number(checkpoint), timestamp);
             }
 

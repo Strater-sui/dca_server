@@ -12,17 +12,15 @@ import {
   SUPRA_PRICE_FEEDS,
 } from "bucket-protocol-sdk";
 import { COIN_METADATA, DCA_BUCKET_CONFIG, DCA_CONFIG } from "../config";
-import { Escrow } from "../type";
-import { isEscrow } from "../utils";
 import { SuiClient } from "@mysten/sui.js/client";
 
 export function dcaPlaceOrder(
   tx: TransactionBlock,
   inputs: {
     owner: string;
-    coin: TransactionObjectArgument;
-    inputType: COIN;
-    outputType: COIN;
+    inputCoin: TransactionObjectArgument;
+    inputToken: COIN;
+    outputToken: COIN;
     frequency: number;
     orders: number;
     priceEnabled: boolean;
@@ -32,9 +30,9 @@ export function dcaPlaceOrder(
 ): [TransactionObjectArgument] {
   const {
     owner,
-    coin,
-    inputType,
-    outputType,
+    inputCoin,
+    inputToken,
+    outputToken,
     frequency,
     orders,
     priceEnabled,
@@ -43,13 +41,13 @@ export function dcaPlaceOrder(
   } = inputs;
   const [escrow] = tx.moveCall({
     target: DCA_CONFIG.targets.placeOrder,
-    typeArguments: [COINS_TYPE_LIST[inputType], COINS_TYPE_LIST[outputType]],
+    typeArguments: [COINS_TYPE_LIST[inputToken], COINS_TYPE_LIST[outputToken]],
     arguments: [
       tx.sharedObjectRef(DCA_CONFIG.DCA_REG),
       tx.pure(owner, "address"),
-      coin,
-      tx.object(COIN_METADATA[inputType]),
-      tx.object(COIN_METADATA[outputType]),
+      inputCoin,
+      tx.object(COIN_METADATA[inputToken]),
+      tx.object(COIN_METADATA[outputToken]),
       tx.pure(frequency),
       tx.pure(orders),
       tx.pure(priceEnabled),
@@ -61,44 +59,21 @@ export function dcaPlaceOrder(
   return [escrow];
 }
 
-export function dcaFinalizeNewEscrow(
-  tx: TransactionBlock,
-  inputs: {
-    inputType: COIN;
-    outputType: COIN;
-    escrow: TransactionObjectArgument;
-    receipt: TransactionArgument;
-    coinY: TransactionObjectArgument;
-  },
-) {
-  const { escrow, receipt, coinY, inputType, outputType } = inputs;
-  tx.moveCall({
-    target: DCA_CONFIG.targets.finalizeNewEscrow,
-    typeArguments: [COINS_TYPE_LIST[inputType], COINS_TYPE_LIST[outputType]],
-    arguments: [tx.sharedObjectRef(DCA_CONFIG.DCA_REG), escrow, receipt, coinY],
-  });
-}
-
 export function dcaExecuteOrder(
   tx: TransactionBlock,
   inputs: {
-    inputType: COIN;
-    outputType: COIN;
-    escrow: Escrow | TransactionObjectArgument;
+    inputType: string;
+    outputType: string;
+    escrowId: string;
   },
 ): [TransactionObjectArgument, TransactionArgument] {
-  const { inputType, outputType, escrow } = inputs;
+  const { inputType, outputType, escrowId } = inputs;
+
   const [coinX, receipt] = tx.moveCall({
     target: DCA_CONFIG.targets.executeOrder,
-    typeArguments: [COINS_TYPE_LIST[inputType], COINS_TYPE_LIST[outputType]],
+    typeArguments: [inputType, outputType],
     arguments: [
-      isEscrow(escrow)
-        ? tx.sharedObjectRef({
-            objectId: escrow.id,
-            initialSharedVersion: escrow.initial_shared_version,
-            mutable: true,
-          })
-        : escrow,
+      tx.object(escrowId),
       tx.sharedObjectRef(ORACLE_OBJECT),
       tx.sharedObjectRef(CLOCK_OBJECT),
     ],
@@ -109,22 +84,22 @@ export function dcaExecuteOrder(
 export function dcaRepayOrder(
   tx: TransactionBlock,
   inputs: {
-    inputType: COIN;
-    outputType: COIN;
-    escrow: Escrow | TransactionObjectArgument;
+    inputType: string;
+    outputType: string;
+    escrowId: string;
     receipt: TransactionArgument;
-    coinY: TransactionObjectArgument;
+    coinOut: TransactionObjectArgument;
   },
 ) {
-  const { inputType, outputType, escrow, receipt, coinY } = inputs;
+  const { inputType, outputType, escrowId, receipt, coinOut } = inputs;
   tx.moveCall({
     target: DCA_CONFIG.targets.repayOrder,
-    typeArguments: [COINS_TYPE_LIST[inputType], COINS_TYPE_LIST[outputType]],
+    typeArguments: [inputType, outputType],
     arguments: [
       tx.sharedObjectRef(DCA_CONFIG.DCA_REG),
-      isEscrow(escrow) ? tx.object(escrow.id) : escrow,
+      tx.object(escrowId),
       receipt,
-      coinY,
+      coinOut,
     ],
   });
 }
@@ -132,26 +107,23 @@ export function dcaRepayOrder(
 export function dcaCloseEscrow(
   tx: TransactionBlock,
   inputs: {
-    inputType: COIN;
-    outputType: COIN;
-    escrow: Escrow;
+    inputType: string;
+    outputType: string;
+    escrowId: string;
   },
 ): [TransactionObjectArgument, TransactionObjectArgument] {
-  const { inputType, outputType, escrow } = inputs;
+  const { inputType, outputType, escrowId } = inputs;
   const [coinX, coinY] = tx.moveCall({
     target: DCA_CONFIG.targets.closeEscrow,
-    typeArguments: [COINS_TYPE_LIST[inputType], COINS_TYPE_LIST[outputType]],
+    typeArguments: [inputType, outputType],
     arguments: [
       tx.sharedObjectRef(DCA_CONFIG.DCA_REG),
-      tx.sharedObjectRef({
-        objectId: escrow.id,
-        initialSharedVersion: escrow.initial_shared_version,
-        mutable: true,
-      }),
+      tx.object(escrowId),
     ],
   });
   return [coinX, coinY];
 }
+
 export function dcaClaimFee(
   tx: TransactionBlock,
   coinSymbol: COIN,

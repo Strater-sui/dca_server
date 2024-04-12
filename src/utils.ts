@@ -1,18 +1,5 @@
-import { TransactionObjectArgument } from "@mysten/sui.js/transactions";
-import { Escrow } from "./type.d";
-
-export const FLOAT_SCALING = 10 ** 9;
-// Type Guard
-export function isEscrow(
-  escrow: TransactionObjectArgument | Escrow,
-): escrow is Escrow {
-  return (
-    (<Escrow>escrow).typeX !== undefined && (<Escrow>escrow).typeY !== undefined
-  );
-}
-
 import { BCS, getSuiMoveConfig } from "@mysten/bcs";
-import { DECIMAL_PLACES } from "./constants";
+import { DECIMAL_PLACES, FLOAT_SCALING } from "./constants";
 export const bcs_ = new BCS(getSuiMoveConfig());
 
 export const bcs = bcs_
@@ -61,3 +48,5 @@ export function floatBitIntToNumber(value: bigint, decimals = DECIMAL_PLACES) {
     10 ** decimals
   );
 }
+
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

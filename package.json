@@ -2,36 +2,37 @@
   "name": "dca_server",
   "module": "index.ts",
   "scripts": {
+    "start": "ts-node src/index.ts",
     "dev": "bun --watch src/index.ts | pino-pretty",
-    "db:generate": "drizzle-kit generate:pg --schema ./src/db/schema.ts --out=./src/db/migrations",
-    "db:migrate": "bun run ./src/db/migrate.ts",
-    "db:seed": "bun run ./src/db/seed.ts",
-    "db:push": "drizzle-kit push:pg --config=drizzle.config.ts",
-    "db:drop": "drizzle-kit drop",
+    "db:generate": "bunx prisma generate",
+    "fallback": "ts-node src/fallback.ts",
+    "script": "npx ts-node src/script.ts",
     "format": "bunx @biomejs/biome format ./src --write",
     "lint": "bunx @biomejs/biome lint ./src",
     "build": "npx tsc",
-    "start": "node src/index.js",
     "deploy": "pnpm run build && pnpm run start"
   },
   "devDependencies": {
+    "@types/yargs": "^17.0.32",
     "bun-types": "latest",
-    "drizzle-kit": "^0.20.14",
-    "pino-pretty": "^10.3.1"
+    "pino-pretty": "^10.3.1",
+    "prisma": "^5.12.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
     "@mysten/bcs": "^0.11.1",
-    "@mysten/sui.js": "^0.51.0",
-    "@neondatabase/serverless": "^0.9.0",
+    "@mysten/sui.js": "^0.50.1",
+    "@prisma/client": "^5.12.0",
     "aftermath-ts-sdk": "^1.1.47",
+    "axios": "^1.6.8",
     "bucket-protocol-sdk": "^0.7.22",
     "cron": "^3.1.6",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.30.2",
     "p-limit": "3.1.0",
-    "pino": "^8.19.0"
+    "pino": "^8.19.0",
+    "typescript": "^5.0.0",
+    "yargs": "^17.7.2"
   }
 }

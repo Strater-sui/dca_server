@@ -2,13 +2,12 @@ import {
   Ed25519Keypair,
   Ed25519PublicKey,
 } from "@mysten/sui.js/keypairs/ed25519";
-import { DCAServer } from "./lib/dca_server";
 import { CronJob } from "cron";
+import * as fs from 'fs';
+import { DCAServer } from "./server";
 
-import * as dotenv from "dotenv";
 import { logger } from "./lib/logger";
-import { check } from "drizzle-orm/mysql-core";
-dotenv.config();
+const lockFilePath = 'task.lock';
 
 // (async () => {
 //   dotenv.config();
@@ -20,18 +19,39 @@ dotenv.config();
 const keypair = Ed25519Keypair.deriveKeypair(process.env.ADMIN_PHRASE!);
 const dcaServer = new DCAServer(keypair);
 
-let idx = 0;
-
 console.log("Server Start");
+
+unlock();
 const job = new CronJob("*/1 * * * * *", async function () {
+  if (isLocked()) {
+    console.log('Task is already running, skipping.');
+    return;
+  }
+
   try {
-    console.log("\n");
-    const currentTime = Math.floor(new Date().getTime() / 1000);
-    logger.info({ currentTime });
+    lock();
+    logger.debug(`Running`);
     await dcaServer.checkpoint();
   } catch (error) {
     logger.warn({ error }, "error");
+  } finally {
+    unlock();
   }
 });
+
+function isLocked(): boolean {
+  return fs.existsSync(lockFilePath);
+}
+
+function lock(): void {
+  fs.writeFileSync(lockFilePath, '');
+}
+
+function unlock(): void {
+  if (fs.existsSync(lockFilePath)) {
+    fs.unlinkSync(lockFilePath);
+  }
+}
+
 console.log("After job instantiation");
 job.start();

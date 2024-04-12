@@ -8,41 +8,6 @@ import { SuiClient, getFullnodeUrl } from "@mysten/sui.js/client";
 import { COIN, COINS_TYPE_LIST } from "bucket-protocol-sdk";
 import { MoveCallTarget } from "../type";
 
-export async function aftermathSwapByInput(
-  tx: TransactionBlock,
-  inputs: {
-    senderAddress: string;
-    coinInSymbol: COIN;
-    coinOutSymbol: COIN;
-    coinInAmount: bigint;
-    coinIn: TransactionArgument;
-    slippage: number;
-  },
-): Promise<TransactionArgument | undefined> {
-  const route =
-    await AFTERMATH_CONFIG.afRouter.getCompleteTradeRouteGivenAmountIn({
-      coinInType: COINS_TYPE_LIST[inputs.coinInSymbol],
-      coinOutType: COINS_TYPE_LIST[inputs.coinOutSymbol],
-      coinInAmount: inputs.coinInAmount,
-      // optional
-      // referrer: "0x73c88d432ad4b2bfc5170148faae6f11f39550fb84f9b83c8d152dd89bc8eda3",
-      // externalFee: {
-      //   recipient: "0x73c88d432ad4b2bfc5170148faae6f11f39550fb84f9b83c8d152dd89bc8eda3",
-      //   feePercentage: 0.001, // 0.1% fee from amount out
-      // },
-    });
-  return AFTERMATH_CONFIG.afApi
-    .Router()
-    .fetchAddTransactionForCompleteTradeRoute({
-      tx: tx as any,
-      walletAddress: inputs.senderAddress,
-      completeRoute: route,
-      slippage: inputs.slippage,
-      coinInId: inputs.coinIn,
-      isSponsoredTx: false,
-    });
-}
-
 const AFTERMATH_INNER_CONFIG = {
   pools: {
     packages: {
@@ -265,3 +230,38 @@ export const AFTERMATH_CONFIG = {
     indexerCaller,
   ),
 };
+
+export async function afSwap(
+  tx: TransactionBlock,
+  inputs: {
+    senderAddress: string;
+    inputType: string;
+    outputType: string;
+    coinInAmount: bigint;
+    coinIn: TransactionArgument;
+    slippage: number;
+  },
+): Promise<TransactionArgument | undefined> {
+  const route =
+    await AFTERMATH_CONFIG.afRouter.getCompleteTradeRouteGivenAmountIn({
+      coinInType: inputs.inputType,
+      coinOutType: inputs.outputType,
+      coinInAmount: inputs.coinInAmount,
+      // optional
+      // referrer: "0x73c88d432ad4b2bfc5170148faae6f11f39550fb84f9b83c8d152dd89bc8eda3",
+      // externalFee: {
+      //   recipient: "0x73c88d432ad4b2bfc5170148faae6f11f39550fb84f9b83c8d152dd89bc8eda3",
+      //   feePercentage: 0.001, // 0.1% fee from amount out
+      // },
+    });
+  return AFTERMATH_CONFIG.afApi
+    .Router()
+    .fetchAddTransactionForCompleteTradeRoute({
+      tx: tx as any,
+      walletAddress: inputs.senderAddress,
+      completeRoute: route,
+      slippage: inputs.slippage,
+      coinInId: inputs.coinIn,
+      isSponsoredTx: false,
+    });
+}

@@ -1,18 +1,19 @@
-const DCA_PACKAGE = process.env.DCA_PACKAGE!;
 import { COIN, COINS_TYPE_LIST } from "bucket-protocol-sdk";
 import { MoveCallTarget } from "./type";
+import { DCA_PACKAGE, DCA_PACKAGE_INITIAL_VERSION, DCA_REG } from "./constants";
 
 export const DCA_CONFIG = {
   PACKAGE_ID: DCA_PACKAGE,
   DCA_REG: {
     objectId:
-      "0xe5c8b091708875100fe9780a0c401387ef2a81c5ece59c57b0827c41b8f46df2",
-    initialSharedVersion: 83663065,
+      DCA_REG,
+    initialSharedVersion: DCA_PACKAGE_INITIAL_VERSION,
     mutable: true,
   },
   DCA_CAP: `${DCA_PACKAGE}::dca::DCACap`,
   targets: {
     placeOrder: `${DCA_PACKAGE}::dca::place_order` as MoveCallTarget,
+    newEscrow: `${DCA_PACKAGE}::dca::new_escrow` as MoveCallTarget,
     finalizeNewEscrow:
       `${DCA_PACKAGE}::dca::finalize_new_escrow` as MoveCallTarget,
     executeOrder: `${DCA_PACKAGE}::dca::execute_order` as MoveCallTarget,
@@ -58,3 +59,8 @@ Object.entries(COINS_TYPE_LIST).forEach(([coin, id]) => {
 COIN_SYMBOLS[
   "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"
 ] = "SUI";
+
+
+export const ORDER_CREATED_EVENT = `${DCA_PACKAGE}::event::OrderCreated`;
+export const ORDER_EXECUTED_EVENT = `${DCA_PACKAGE}::event::OrderExecuted`;
+export const ORDER_CLOSED_EVENT = `${DCA_PACKAGE}::event::OrderClosed`;

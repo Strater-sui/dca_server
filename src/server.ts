@@ -49,6 +49,7 @@ export class DCAServer {
 
     const now = new Date().getTime();
     for (const dca of dcas) {
+      // Is expired
       if (now >= (dca.createdAt.getTime() + dca.frequency * dca.ordersTotal * 1000 + TIME_WINDOW)) {
         const ret = await closeOrder(this.client, this.keypair, dca);
         if (ret && ret.status == ErrorCode.SUCCESS && ret.data) {

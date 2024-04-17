@@ -2,7 +2,11 @@
 /node_modules
 
 .env
+.env.local
+.env.prod
 
 app.log
 package-lock.json
 yarn.lock
+
+task.lock

@@ -32,7 +32,7 @@ export const updateExecuteEvent = async (prisma: PrismaClient, event: ExecuteOrd
             },
             data: {
                 baseRemain: event.balance_x,
-                quoteReceived: event.balance_y,
+                quoteReceived: event.withdrawn_y,
                 status: DcaStatus.InProgress,
                 ordersExecuted: Number(event.executed_order),
                 lastExecuted: timestamp,

@@ -33,7 +33,7 @@ const job = new CronJob("*/1 * * * * *", async function () {
     logger.debug(`Running`);
     await dcaServer.checkpoint();
   } catch (error) {
-    logger.warn({ error }, "error");
+    logger.warn(`error: ${error}`);
   } finally {
     unlock();
   }

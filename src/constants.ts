@@ -14,4 +14,4 @@ export const TIME_WINDOW = 1000 * 60 * 10;
 export const DCA_PACKAGE = process.env.DCA_PACKAGE || "";
 export const DCA_PACKAGE_INITIAL_VERSION = Number(process.env.DCA_PACKAGE_INITIAL_VERSION || "0");
 export const DCA_REG = process.env.DCA_REG || "";
-export const DCA_CAP = "0xbed2ee0728f100aea92b7122b6656da78f2f1e901f37d3e064427c57fe1f5ea5";
+export const DCA_CAP = "0xe3f6f77c32e2ec27670c1a6c282b8a6b0a7ebc56057077c9467c4383cb7c0b6f";

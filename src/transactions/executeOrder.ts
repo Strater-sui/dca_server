@@ -1,7 +1,7 @@
 import { Keypair } from "@mysten/sui.js/cryptography";
 import { TransactionBlock, TransactionObjectArgument } from "@mysten/sui.js/transactions";
 import { BucketClient, getCoinSymbol } from "bucket-protocol-sdk";
-import { dcaCloseEscrow, dcaExecuteOrder, dcaRepayOrder } from "../lib/operation";
+import { dcaClearEscrow, dcaCloseEscrow, dcaExecuteOrder, dcaRepayOrder } from "../lib/operation";
 import { SuiClient } from "@mysten/sui.js/client";
 import { logger } from "../lib/logger";
 import { extractErrorMessage } from "../utils";
@@ -17,10 +17,6 @@ export const executeOrder = async (
     escrow: Dca,
     closed = false,
 ) => {
-    if (closed) {
-        console.log('Close order');
-    }
-
     const bucketClient = new BucketClient();
     const senderAddress = signer.toSuiAddress();
 
@@ -31,6 +27,11 @@ export const executeOrder = async (
     if (!inputToken || !outputToken) {
         return;
     }
+
+    logger.info({
+        action: "try_executeOrder",
+        escrow: escrowId
+    });
 
     // Update price oracle for input & output pair
     const tx = new TransactionBlock();
@@ -67,15 +68,11 @@ export const executeOrder = async (
     });
 
     if (closed) {
-        const [coinX, coinY] = dcaCloseEscrow(tx, {
+        dcaClearEscrow(tx, {
             inputType,
             outputType,
             escrowId,
         });
-        tx.transferObjects(
-            [coinX, coinY],
-            tx.pure(senderAddress, "address"),
-        );
     }
 
     const result = await client.devInspectTransactionBlock({
@@ -97,7 +94,7 @@ export const executeOrder = async (
                 status: ErrorCode.FAILED_FETCH,
             };
         }
-        
+
         const events = transaction.events?.filter(t => t.packageId == DCA_PACKAGE);
         logger.info({ action: "executeOrder", escrow: escrow.escrowId, digest });
 
@@ -118,15 +115,19 @@ export const executeOrder = async (
                 result.effects.status.error,
             );
 
+            if (errorCode) {
+                logger.error({ action: "executeOrder", escrowId, error: errorCode });
+            }
+            else {
+                logger.error({ action: "executeOrder", escrowId, error: result.effects.status.error });
+            }
+
             // Error
             if (functionName == "execute_order") {
                 return {
                     status: errorCode,
                 };
             }
-
-            console.log(result.effects.status.error);
-            logger.error({ action: "executeOrder", escrowId, error: errorCode },);
         }
     }
 }

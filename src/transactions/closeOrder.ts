@@ -1,7 +1,7 @@
 import { Keypair } from "@mysten/sui.js/cryptography";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { getCoinSymbol } from "bucket-protocol-sdk";
-import { dcaCloseEscrow } from "../lib/operation";
+import { dcaClearEscrow, dcaCloseEscrow } from "../lib/operation";
 import { SuiClient } from "@mysten/sui.js/client";
 import { logger } from "../lib/logger";
 import { Dca } from "@prisma/client";
@@ -25,18 +25,18 @@ export const closeOrder = async (
         return;
     }
 
-    // Update price oracle for input & output pair
-    const tx = new TransactionBlock();
+    logger.info({
+        action: "try_clearEscrow",
+        escrow: escrowId
+    });
+
     // Close order
-    const [coinIn, coinOut] = dcaCloseEscrow(tx, {
+    const tx = new TransactionBlock();
+    dcaClearEscrow(tx, {
         inputType,
         outputType,
         escrowId,
     });
-    tx.transferObjects(
-        [coinIn, coinOut],
-        tx.pure(senderAddress, "address"),
-    );
 
     const result = await client.devInspectTransactionBlock({
         transactionBlock: tx,
@@ -57,6 +57,8 @@ export const closeOrder = async (
                 status: ErrorCode.FAILED_FETCH,
             };
         }
+
+        console.log(transaction);
 
         const events = transaction.events?.filter(t => t.packageId == DCA_PACKAGE);
         logger.info({ action: "closeOrder", escrow: escrow.escrowId, digest });
@@ -85,7 +87,12 @@ export const closeOrder = async (
                 };
             }
 
-            logger.error({ action: "closeOrder", error: errorCode },);
+            if (errorCode) {
+                logger.error({ action: "closeOrder", error: errorCode },);
+            }
+            else {
+                logger.error({ action: "closeOrder", error: result.effects.status.error },);
+            }
         }
     }
 }

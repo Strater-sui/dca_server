@@ -107,6 +107,27 @@ export function dcaRepayOrder(
   });
 }
 
+export function dcaClearEscrow(
+  tx: TransactionBlock,
+  inputs: {
+    inputType: string;
+    outputType: string;
+    escrowId: string;
+  },
+) {
+  const { inputType, outputType, escrowId } = inputs;
+  tx.moveCall({
+    target: DCA_CONFIG.targets.clearEscrow,
+    typeArguments: [inputType, outputType],
+    arguments: [
+      tx.sharedObjectRef(DCA_CONFIG.DCA_REG),
+      tx.object(DCA_CAP),
+      tx.object(escrowId),
+      tx.sharedObjectRef(CLOCK_OBJECT),
+    ],
+  });
+}
+
 export function dcaCloseEscrow(
   tx: TransactionBlock,
   inputs: {

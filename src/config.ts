@@ -18,6 +18,7 @@ export const DCA_CONFIG = {
       `${DCA_PACKAGE}::dca::finalize_new_escrow` as MoveCallTarget,
     executeOrder: `${DCA_PACKAGE}::dca::execute_order` as MoveCallTarget,
     closeEscrow: `${DCA_PACKAGE}::dca::close_escrow` as MoveCallTarget,
+    clearEscrow: `${DCA_PACKAGE}::dca::clear_escrow_with_cap` as MoveCallTarget,
     repayOrder: `${DCA_PACKAGE}::dca::repay_order` as MoveCallTarget,
     claimFee: `${DCA_PACKAGE}::dca::claim_fee` as MoveCallTarget,
     updatePrice: `${DCA_PACKAGE}::dca::update_price` as MoveCallTarget,

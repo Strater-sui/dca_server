@@ -2,8 +2,7 @@ import {
   Ed25519Keypair,
 } from "@mysten/sui.js/keypairs/ed25519";
 import yargs from 'yargs';
-import { PrismaClient } from "@prisma/client";
-import { closeOrder, executeOrder, placeOrder } from "./transactions";
+import { closeOrder, executeOrder, placeOrder, transfer } from "./transactions";
 import { SuiClient, getFullnodeUrl } from "@mysten/sui.js/client";
 import { COIN, COINS_TYPE_LIST } from "bucket-protocol-sdk";
 import { CloseOrderEvent, ErrorCode, EscrowOrderEvent, ExecuteOrderEvent } from "./type";
@@ -17,9 +16,11 @@ import prisma from "./lib/prisma";
   // parse command line arguments
   const params = yargs(process.argv.slice(2))
     .options('action', {
-      choices: ["place", "execute", "close"],
+      choices: ["place", "execute", "close", "transfer"],
       demandOption: true,
     })
+    .string("recipient")
+    .string("objectId")
     .string("escrowId")
     .string("input")
     .string("output")
@@ -125,6 +126,17 @@ import prisma from "./lib/prisma";
           else {
             console.log("Close order failed", ret?.status);
           }
+        }
+        break;
+      case "transfer":
+        {
+          let { recipient, objectId } = params;
+          if (!recipient || !objectId) {
+            console.log("Required params missing");
+            return;
+          }
+
+          await transfer(client, keypair, objectId, recipient);
         }
         break;
       default:

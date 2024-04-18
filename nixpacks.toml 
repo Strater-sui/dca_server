@@ -1,5 +1,6 @@
-[phases.setup]
-cmds = ['yarn install']
+[build.nixpacksPlan.phases.install]
+dependsOn = ["setup"]
+cmds = ["cd ../.. && yarn"]
 
 [phases.build]
 cmds = ['yarn run build']

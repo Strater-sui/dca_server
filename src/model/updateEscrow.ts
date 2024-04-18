@@ -17,6 +17,7 @@ export const updateEscrowEvent = async (prisma: PrismaClient, event: EscrowOrder
                 quoteReceived: "0",
                 ordersTotal: Number(event.orders),
                 ordersExecuted: 0,
+                failedCount: 0,
                 frequency: Number(event.frequency),
                 status: DcaStatus.Pending,
                 createdAt: timestamp,

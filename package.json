@@ -3,12 +3,9 @@
   "module": "index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "dev": "bun --watch src/index.ts | pino-pretty",
-    "db:generate": "bunx prisma generate",
+    "generate": "npx prisma generate",
     "fallback": "ts-node src/fallback.ts",
     "script": "npx ts-node src/script.ts",
-    "format": "bunx @biomejs/biome format ./src --write",
-    "lint": "bunx @biomejs/biome lint ./src",
     "build": "npx tsc",
     "deploy": "pnpm run build && pnpm run start"
   },

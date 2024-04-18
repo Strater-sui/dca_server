@@ -131,7 +131,7 @@ const fetchClosedEvents = async (
     await fetchClosedEvents(prisma);
 
     // Wait 1 minitue for next run
-    await sleep(1000);
+    await sleep(1000 * 60);
   }
 
 })();

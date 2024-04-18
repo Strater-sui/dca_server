@@ -5,7 +5,6 @@ import {
 } from "@mysten/sui.js/transactions";
 import { Aftermath, AftermathApi, IndexerCaller } from "aftermath-ts-sdk";
 import { SuiClient, getFullnodeUrl } from "@mysten/sui.js/client";
-import { COIN, COINS_TYPE_LIST } from "bucket-protocol-sdk";
 import { MoveCallTarget } from "../type";
 
 const AFTERMATH_INNER_CONFIG = {
@@ -242,11 +241,12 @@ export async function afSwap(
     slippage: number;
   },
 ): Promise<TransactionArgument | undefined> {
+  const { senderAddress, coinIn, inputType, outputType, coinInAmount, slippage } = inputs;
   const route =
     await AFTERMATH_CONFIG.afRouter.getCompleteTradeRouteGivenAmountIn({
-      coinInType: inputs.inputType,
-      coinOutType: inputs.outputType,
-      coinInAmount: inputs.coinInAmount,
+      coinInType: inputType,
+      coinOutType: outputType,
+      coinInAmount: coinInAmount,
       // optional
       // referrer: "0x73c88d432ad4b2bfc5170148faae6f11f39550fb84f9b83c8d152dd89bc8eda3",
       // externalFee: {
@@ -258,10 +258,10 @@ export async function afSwap(
     .Router()
     .fetchAddTransactionForCompleteTradeRoute({
       tx: tx as any,
-      walletAddress: inputs.senderAddress,
+      walletAddress: senderAddress,
       completeRoute: route,
-      slippage: inputs.slippage,
-      coinInId: inputs.coinIn,
+      slippage: slippage,
+      coinInId: coinIn,
       isSponsoredTx: false,
     });
 }

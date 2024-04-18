@@ -64,10 +64,10 @@ export class DCAServer {
           }
         }
       }
-      else if (!dca.lastExecuted
-        || now >= (dca.lastExecuted.getTime() + dca.frequency * 1000)
+      else if (now >= (dca.createdAt.getTime() + dca.frequency * (dca.ordersExecuted + 1) * 1000)
       ) {
-        const ret = await executeOrder(this.client, this.keypair, dca, dca.ordersTotal - dca.ordersExecuted == 1);
+        const isLastOrder = dca.ordersTotal - dca.ordersExecuted == 1;
+        const ret = await executeOrder(this.client, this.keypair, dca, isLastOrder);
         if (ret && ret.status == ErrorCode.SUCCESS && ret.data) {
           let { events, digest, checkpoint, timestamp } = ret.data;
           if (events) {

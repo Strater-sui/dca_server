@@ -25,7 +25,7 @@
     "@mysten/bcs": "^0.11.1",
     "@mysten/sui.js": "^0.50.1",
     "@prisma/client": "^5.12.0",
-    "aftermath-ts-sdk": "^1.1.47",
+    "aftermath-ts-sdk": "^1.1.55",
     "axios": "^1.6.8",
     "bucket-protocol-sdk": "^0.7.22",
     "cron": "^3.1.6",

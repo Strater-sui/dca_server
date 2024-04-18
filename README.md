@@ -25,7 +25,7 @@ yarn start
 ## Scripts for test actions
 
 # Place Order
-yarn script --action place --input USDC --output SUI --amount 0.01 --orders 2 --frequency 60
+yarn script --action place --input USDC --output SUI --amount 0.1 --orders 2 --frequency 30
 
 # Execute Order
 yarn script --action execute --escrowId 0x532780e00d463898329a4d8f39c534631eb6614f28dfd9e11a286b709e6bd061

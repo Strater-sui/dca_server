@@ -47,6 +47,7 @@ export const closeOrder = async (
         const resp = await client.signAndExecuteTransactionBlock({
             transactionBlock: tx,
             signer,
+            requestType: 'WaitForEffectsCert'
         });
         const digest = resp.digest;
 
@@ -57,8 +58,6 @@ export const closeOrder = async (
                 status: ErrorCode.FAILED_FETCH,
             };
         }
-
-        console.log(transaction);
 
         const events = transaction.events?.filter(t => t.packageId == DCA_PACKAGE);
         logger.info({ action: "closeOrder", escrow: escrow.escrowId, digest });

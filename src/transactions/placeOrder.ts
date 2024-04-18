@@ -52,6 +52,7 @@ export const placeOrder = async (
         const resp = await client.signAndExecuteTransactionBlock({
             transactionBlock: tx,
             signer,
+            requestType: 'WaitForEffectsCert'
         });
         const digest = resp.digest;
 

@@ -26,15 +26,6 @@ export const placeOrder = async (
     const inputCoin = await getInputCoins(tx, client, owner, COINS_TYPE_LIST[inputToken], inputAmount);
 
     try {
-        logger.info({
-            action: "try_createEscrow",
-            inputToken,
-            outputToken,
-            amount,
-            frequency,
-            orders
-        });
-
         // create Escrow order
         dcaPlaceOrder(tx, {
             owner,
@@ -102,7 +93,12 @@ export const placeOrder = async (
                     };
                 }
 
-                logger.error({ action: "createOrder", error: errorCode },);
+                if (errorCode) {
+                    logger.error({ action: "createOrder", error: errorCode });
+                }
+                else {
+                    logger.error({ action: "createOrder", error: result.effects.status.error });
+                }
             }
         }
     }

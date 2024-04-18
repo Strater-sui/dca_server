@@ -28,12 +28,18 @@ export const executeOrder = async (
         return;
     }
 
-    logger.info({
-        action: "try_executeOrder",
-        escrow: escrowId
-    });
-
     try {
+        // Before close order, validate escrowId exists
+        const escrowObj = await client.getObject({
+            id: escrowId
+        });
+        if (escrowObj.error) {
+            logger.error({ action: "closeOrder", escrow: escrow.escrowId, error: "Escrow not exists" });
+
+            return {
+                status: ErrorCode.NOT_FOUND,
+            };
+        }
 
         // Update price oracle for input & output pair
         const tx = new TransactionBlock();

@@ -25,12 +25,19 @@ export const closeOrder = async (
         return;
     }
 
-    logger.info({
-        action: "try_clearEscrow",
-        escrow: escrowId
-    });
-
     try {
+        // Before close order, validate escrowId exists
+        const escrowObj = await client.getObject({
+            id: escrowId
+        });
+        if(escrowObj.error) {
+            logger.error({ action: "closeOrder", escrow: escrow.escrowId, error: "Escrow not exists" });
+
+            return {
+                status: ErrorCode.NOT_FOUND,
+            };
+        }
+
         // Close order
         const tx = new TransactionBlock();
         dcaClearEscrow(tx, {

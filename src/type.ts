@@ -29,7 +29,8 @@ export enum TransactionStatus {
 export enum ErrorCode {
   SUCCESS = 0,
   FAILED_FETCH = 1,
-  UNKNOWN_ERROR = 2,
+  NOT_FOUND = 2,
+  UNKNOWN_ERROR = 99,
 
   ERR_INSUFFICIENT_REPAID_AMOUNTERR = 101,
   ERR_INVALID_PRICEERR = 102,

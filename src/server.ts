@@ -64,6 +64,17 @@ export class DCAServer {
               }
             }
           }
+          else if (ret.status == ErrorCode.NOT_FOUND) {
+            await prisma.dca.update({
+              data: {
+                status: DcaStatus.Completed,
+                updatedAt: new Date(),
+              },
+              where: {
+                escrowId: dca.escrowId
+              }
+            })
+          }
           else {
             await prisma.dca.update({
               data: {
@@ -96,6 +107,17 @@ export class DCAServer {
                 }
               }
             }
+          }
+          else if (ret.status == ErrorCode.NOT_FOUND) {
+            await prisma.dca.update({
+              data: {
+                status: DcaStatus.Completed,
+                updatedAt: new Date(),
+              },
+              where: {
+                escrowId: dca.escrowId
+              }
+            })
           }
           else {
             await prisma.dca.update({

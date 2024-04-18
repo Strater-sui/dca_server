@@ -2,12 +2,11 @@
   "name": "dca_server",
   "module": "index.ts",
   "scripts": {
-    "start": "yarn run build & node dist/index.js",
     "generate": "npx prisma generate",
-    "fallback": "yarn run build & node dist/fallback.js",
-    "script": "yarn run build & node dist/script.js",
-    "build": "npx tsc",
-    "deploy": "pnpm run build && pnpm run start"
+    "start": "node dist/index.js",
+    "fallback": "node dist/fallback.js",
+    "script": "node dist/script.js",
+    "build": "rimraf dist; npx tsc"
   },
   "devDependencies": {
     "@types/yargs": "^17.0.32",

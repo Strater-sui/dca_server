@@ -122,10 +122,10 @@ const fetchClosedEvents = async (
 }
 
 (async () => {
-  logger.info(`Fallback script running`);
 
   // Loop infinite
   while (true) {
+    logger.info(`Fallback script running`);
     await fetchEscrowEvents(prisma);
     await fetchExecutedEvents(prisma);
     await fetchClosedEvents(prisma);

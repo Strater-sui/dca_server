@@ -8,7 +8,6 @@ import { TransactionAction } from "./type";
 import { updateCloseEvent } from "./model/updateClose";
 import { updateExecuteEvent } from "./model/updateExecute";
 import { updateEscrowEvent } from "./model/updateEscrow";
-import prisma from "./lib/prisma";
 
 const fetchEscrowEvents = async (
   prisma: PrismaClient
@@ -122,6 +121,7 @@ const fetchClosedEvents = async (
 }
 
 (async () => {
+  const prisma = new PrismaClient();
 
   // Loop infinite
   while (true) {

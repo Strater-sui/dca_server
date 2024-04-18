@@ -2,10 +2,10 @@
   "name": "dca_server",
   "module": "index.ts",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "yarn run build & node dist/index.js",
     "generate": "npx prisma generate",
-    "fallback": "ts-node src/fallback.ts",
-    "script": "npx ts-node src/script.ts",
+    "fallback": "yarn run build & node dist/fallback.js",
+    "script": "yarn run build & node dist/script.js",
     "build": "npx tsc",
     "deploy": "pnpm run build && pnpm run start"
   },

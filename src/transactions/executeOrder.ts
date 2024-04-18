@@ -33,102 +33,111 @@ export const executeOrder = async (
         escrow: escrowId
     });
 
-    // Update price oracle for input & output pair
-    const tx = new TransactionBlock();
-    bucketClient.updateSupraOracle(tx, inputToken);
-    bucketClient.updateSupraOracle(tx, outputToken);
+    try {
 
-    // Execute order
-    const [coinIn, receipt] = dcaExecuteOrder(tx, {
-        inputType,
-        outputType,
-        escrowId,
-    });
+        // Update price oracle for input & output pair
+        const tx = new TransactionBlock();
+        bucketClient.updateSupraOracle(tx, inputToken);
+        bucketClient.updateSupraOracle(tx, outputToken);
 
-    const inAmount = BigInt(Number(escrow.baseTotal) / escrow.ordersTotal);
-
-    // Swap using aftermath
-    const coinOut = await afSwap(tx, {
-        senderAddress,
-        inputType,
-        outputType,
-        coinInAmount: inAmount,
-        coinIn,
-        slippage: 1,
-    });
-    if (!coinOut) return undefined;
-
-    // Repay order
-    dcaRepayOrder(tx, {
-        inputType,
-        outputType,
-        escrowId,
-        receipt,
-        coinOut: coinOut as TransactionObjectArgument,
-    });
-
-    if (closed) {
-        dcaClearEscrow(tx, {
+        // Execute order
+        const [coinIn, receipt] = dcaExecuteOrder(tx, {
             inputType,
             outputType,
             escrowId,
         });
-    }
 
-    const result = await client.devInspectTransactionBlock({
-        transactionBlock: tx,
-        sender: senderAddress,
-    });
+        const inAmount = BigInt(Number(escrow.baseTotal) / escrow.ordersTotal);
 
-    if (result.effects.status.status == "success") {
-        const resp = await client.signAndExecuteTransactionBlock({
-            transactionBlock: tx,
-            signer,
-            requestType: 'WaitForEffectsCert'
+        // Swap using aftermath
+        const coinOut = await afSwap(tx, {
+            senderAddress,
+            inputType,
+            outputType,
+            coinInAmount: inAmount,
+            coinIn,
+            slippage: 1,
         });
-        const digest = resp.digest;
+        if (!coinOut) return undefined;
 
-        // get transaction validate
-        const transaction = await getTransaction(client, digest);
-        if (!transaction) {
-            return {
-                status: ErrorCode.FAILED_FETCH,
-            };
+        // Repay order
+        dcaRepayOrder(tx, {
+            inputType,
+            outputType,
+            escrowId,
+            receipt,
+            coinOut: coinOut as TransactionObjectArgument,
+        });
+
+        if (closed) {
+            dcaClearEscrow(tx, {
+                inputType,
+                outputType,
+                escrowId,
+            });
         }
 
-        const events = transaction.events?.filter(t => t.packageId == DCA_PACKAGE);
-        logger.info({ action: "executeOrder", escrow: escrow.escrowId, digest });
+        const result = await client.devInspectTransactionBlock({
+            transactionBlock: tx,
+            sender: senderAddress,
+        });
 
-        return {
-            status: ErrorCode.SUCCESS,
-            data: {
-                digest,
-                events,
-                checkpoint: transaction.checkpoint,
-                timestamp: new Date(Number(transaction.timestampMs))
-            }
-        };
-    } else {
-        // Error handling
-        // tx.blockData.transactions.forEach((tx, id) => console.log(id, tx));
-        if (result.effects.status.error) {
-            const [functionName, errorCode] = extractErrorMessage(
-                result.effects.status.error,
-            );
+        if (result.effects.status.status == "success") {
+            const resp = await client.signAndExecuteTransactionBlock({
+                transactionBlock: tx,
+                signer,
+                requestType: 'WaitForEffectsCert'
+            });
+            const digest = resp.digest;
 
-            if (errorCode) {
-                logger.error({ action: "executeOrder", escrowId, error: errorCode });
-            }
-            else {
-                logger.error({ action: "executeOrder", escrowId, error: result.effects.status.error });
-            }
-
-            // Error
-            if (functionName == "execute_order") {
+            // get transaction validate
+            const transaction = await getTransaction(client, digest);
+            if (!transaction) {
                 return {
-                    status: errorCode,
+                    status: ErrorCode.FAILED_FETCH,
                 };
             }
+
+            const events = transaction.events?.filter(t => t.packageId == DCA_PACKAGE);
+            logger.info({ action: "executeOrder", escrow: escrow.escrowId, digest });
+
+            return {
+                status: ErrorCode.SUCCESS,
+                data: {
+                    digest,
+                    events,
+                    checkpoint: transaction.checkpoint,
+                    timestamp: new Date(Number(transaction.timestampMs))
+                }
+            };
+        } else {
+            // Error handling
+            // tx.blockData.transactions.forEach((tx, id) => console.log(id, tx));
+            if (result.effects.status.error) {
+                const [functionName, errorCode] = extractErrorMessage(
+                    result.effects.status.error,
+                );
+
+                if (errorCode) {
+                    logger.error({ action: "executeOrder", escrowId, error: errorCode });
+                }
+                else {
+                    logger.error({ action: "executeOrder", escrowId, error: result.effects.status.error });
+                }
+
+                // Error
+                if (functionName == "execute_order") {
+                    return {
+                        status: errorCode,
+                    };
+                }
+            }
+        }
+    }
+    catch (ex) {
+        logger.error({ action: "executeOrder", escrowId, error: ex });
+        return {
+            status: ErrorCode.UNKNOWN_ERROR
         }
     }
 }

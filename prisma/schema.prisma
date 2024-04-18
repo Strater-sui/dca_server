@@ -28,6 +28,7 @@ model Dca {
   frequency             Int
   ordersTotal           Int
   ordersExecuted        Int
+  failedCount           Int
 
   escrowDigest          String
   closeDigest           String?

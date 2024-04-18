@@ -10,7 +10,7 @@ import { closeOrder, executeOrder } from "./transactions";
 import { ORDER_CLOSED_EVENT, ORDER_EXECUTED_EVENT } from "./config";
 import { updateCloseEvent } from "./model/updateClose";
 import { updateExecuteEvent } from "./model/updateExecute";
-import { TIME_WINDOW } from "./constants";
+import { MAX_RETRY_COUNT, TIME_WINDOW } from "./constants";
 import prisma from "./lib/prisma";
 
 export class DCAServer {
@@ -52,35 +52,62 @@ export class DCAServer {
       // Is expired
       if (now >= (dca.createdAt.getTime() + dca.frequency * dca.ordersTotal * 1000 + TIME_WINDOW)) {
         const ret = await closeOrder(this.client, this.keypair, dca);
-        if (ret && ret.status == ErrorCode.SUCCESS && ret.data) {
-          let { events, digest, checkpoint, timestamp } = ret.data;
-          if (events) {
-            for (const _event of events) {
-              if (_event.type.startsWith(ORDER_CLOSED_EVENT)) {
-                let event = _event.parsedJson as CloseOrderEvent;
-                await updateCloseEvent(prisma, event, digest, Number(checkpoint), timestamp);
+        if (ret) {
+          if (ret.status == ErrorCode.SUCCESS && ret.data) {
+            let { events, digest, checkpoint, timestamp } = ret.data;
+            if (events) {
+              for (const _event of events) {
+                if (_event.type.startsWith(ORDER_CLOSED_EVENT)) {
+                  let event = _event.parsedJson as CloseOrderEvent;
+                  await updateCloseEvent(prisma, event, digest, Number(checkpoint), timestamp);
+                }
               }
             }
           }
+          else {
+            await prisma.dca.update({
+              data: {
+                failedCount: dca.failedCount + 1,
+                status: dca.failedCount >= MAX_RETRY_COUNT ? DcaStatus.Failed : dca.status,
+                updatedAt: new Date(),
+              },
+              where: {
+                id: dca.id
+              }
+            })
+          }
         }
       }
-      else if (now >= (dca.createdAt.getTime() + dca.frequency * (dca.ordersExecuted + 1) * 1000)
-      ) {
+      else if (now >= (dca.createdAt.getTime() + dca.frequency * (dca.ordersExecuted + 1) * 1000)) {
         const isLastOrder = dca.ordersTotal - dca.ordersExecuted == 1;
         const ret = await executeOrder(this.client, this.keypair, dca, isLastOrder);
-        if (ret && ret.status == ErrorCode.SUCCESS && ret.data) {
-          let { events, digest, checkpoint, timestamp } = ret.data;
-          if (events) {
-            for (const _event of events) {
-              if (_event.type.startsWith(ORDER_EXECUTED_EVENT)) {
-                let event = _event.parsedJson as ExecuteOrderEvent;
-                await updateExecuteEvent(prisma, event, digest, Number(checkpoint), timestamp);
-              }
-              else if (_event.type.startsWith(ORDER_CLOSED_EVENT)) {
-                let event = _event.parsedJson as CloseOrderEvent;
-                await updateCloseEvent(prisma, event, digest, Number(checkpoint), timestamp);
+        if (ret) {
+          if (ret.status == ErrorCode.SUCCESS && ret.data) {
+            let { events, digest, checkpoint, timestamp } = ret.data;
+            if (events) {
+              for (const _event of events) {
+                if (_event.type.startsWith(ORDER_EXECUTED_EVENT)) {
+                  let event = _event.parsedJson as ExecuteOrderEvent;
+                  await updateExecuteEvent(prisma, event, digest, Number(checkpoint), timestamp);
+                }
+                else if (_event.type.startsWith(ORDER_CLOSED_EVENT)) {
+                  let event = _event.parsedJson as CloseOrderEvent;
+                  await updateCloseEvent(prisma, event, digest, Number(checkpoint), timestamp);
+                }
               }
             }
+          }
+          else {
+            await prisma.dca.update({
+              data: {
+                failedCount: dca.failedCount + 1,
+                status: dca.failedCount >= MAX_RETRY_COUNT ? DcaStatus.Failed : dca.status,
+                updatedAt: new Date(),
+              },
+              where: {
+                id: dca.id
+              }
+            })
           }
         }
       }

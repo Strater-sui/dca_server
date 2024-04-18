@@ -30,68 +30,76 @@ export const closeOrder = async (
         escrow: escrowId
     });
 
-    // Close order
-    const tx = new TransactionBlock();
-    dcaClearEscrow(tx, {
-        inputType,
-        outputType,
-        escrowId,
-    });
-
-    const result = await client.devInspectTransactionBlock({
-        transactionBlock: tx,
-        sender: senderAddress,
-    });
-
-    if (result.effects.status.status == "success") {
-        const resp = await client.signAndExecuteTransactionBlock({
-            transactionBlock: tx,
-            signer,
-            requestType: 'WaitForEffectsCert'
+    try {
+        // Close order
+        const tx = new TransactionBlock();
+        dcaClearEscrow(tx, {
+            inputType,
+            outputType,
+            escrowId,
         });
-        const digest = resp.digest;
 
-        // get transaction validate
-        const transaction = await getTransaction(client, digest);
-        if (!transaction) {
-            return {
-                status: ErrorCode.FAILED_FETCH,
-            };
-        }
+        const result = await client.devInspectTransactionBlock({
+            transactionBlock: tx,
+            sender: senderAddress,
+        });
 
-        const events = transaction.events?.filter(t => t.packageId == DCA_PACKAGE);
-        logger.info({ action: "closeOrder", escrow: escrow.escrowId, digest });
+        if (result.effects.status.status == "success") {
+            const resp = await client.signAndExecuteTransactionBlock({
+                transactionBlock: tx,
+                signer,
+                requestType: 'WaitForEffectsCert'
+            });
+            const digest = resp.digest;
 
-        return {
-            status: ErrorCode.SUCCESS,
-            data: {
-                digest,
-                events,
-                checkpoint: transaction.checkpoint,
-                timestamp: new Date(Number(transaction.timestampMs))
-            }
-        };
-    } else {
-        // Error handling
-        // tx.blockData.transactions.forEach((tx, id) => console.log(id, tx));
-        if (result.effects.status.error) {
-            const [functionName, errorCode] = extractErrorMessage(
-                result.effects.status.error,
-            );
-
-            // Error
-            if (functionName == "close_order") {
+            // get transaction validate
+            const transaction = await getTransaction(client, digest);
+            if (!transaction) {
                 return {
-                    status: errorCode,
+                    status: ErrorCode.FAILED_FETCH,
                 };
             }
 
-            if (errorCode) {
-                logger.error({ action: "closeOrder", error: errorCode },);
+            const events = transaction.events?.filter(t => t.packageId == DCA_PACKAGE);
+            logger.info({ action: "closeOrder", escrow: escrow.escrowId, digest });
+
+            return {
+                status: ErrorCode.SUCCESS,
+                data: {
+                    digest,
+                    events,
+                    checkpoint: transaction.checkpoint,
+                    timestamp: new Date(Number(transaction.timestampMs))
+                }
+            };
+        } else {
+            // Error handling
+            // tx.blockData.transactions.forEach((tx, id) => console.log(id, tx));
+            if (result.effects.status.error) {
+                const [functionName, errorCode] = extractErrorMessage(
+                    result.effects.status.error,
+                );
+
+                // Error
+                if (functionName == "close_order") {
+                    return {
+                        status: errorCode,
+                    };
+                }
+
+                if (errorCode) {
+                    logger.error({ action: "closeOrder", escrowId, error: errorCode },);
+                }
+                else {
+                    logger.error({ action: "closeOrder", escrowId, error: result.effects.status.error },);
+                }
             }
-            else {
-                logger.error({ action: "closeOrder", error: result.effects.status.error },);
-            }
+        }
+    }
+    catch (ex) {
+        logger.error({ action: "closeOrder", escrowId, error: ex });
+        return {
+            status: ErrorCode.UNKNOWN_ERROR
         }
     }
 }

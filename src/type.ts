@@ -10,6 +10,7 @@ export enum TransactionAction {
 export enum DcaStatus {
   Pending,
   InProgress,
+  Failed,
   Completed,
 }
 
@@ -27,7 +28,8 @@ export enum TransactionStatus {
 
 export enum ErrorCode {
   SUCCESS = 0,
-  FAILED_FETCH = 0,
+  FAILED_FETCH = 1,
+  UNKNOWN_ERROR = 2,
 
   ERR_INSUFFICIENT_REPAID_AMOUNTERR = 101,
   ERR_INVALID_PRICEERR = 102,

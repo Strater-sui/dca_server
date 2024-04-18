@@ -8,6 +8,5 @@
 
 app.log
 package-lock.json
-yarn.lock
 
 task.lock

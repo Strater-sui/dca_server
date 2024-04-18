@@ -67,12 +67,12 @@ export class DCAServer {
           else {
             await prisma.dca.update({
               data: {
-                failedCount: dca.failedCount + 1,
-                status: dca.failedCount >= MAX_RETRY_COUNT ? DcaStatus.Failed : dca.status,
+                retryCount: dca.retryCount + 1,
+                status: dca.retryCount >= MAX_RETRY_COUNT ? DcaStatus.Failed : dca.status,
                 updatedAt: new Date(),
               },
               where: {
-                id: dca.id
+                escrowId: dca.escrowId
               }
             })
           }
@@ -100,12 +100,12 @@ export class DCAServer {
           else {
             await prisma.dca.update({
               data: {
-                failedCount: dca.failedCount + 1,
-                status: dca.failedCount >= MAX_RETRY_COUNT ? DcaStatus.Failed : dca.status,
+                retryCount: dca.retryCount + 1,
+                status: dca.retryCount >= MAX_RETRY_COUNT ? DcaStatus.Failed : dca.status,
                 updatedAt: new Date(),
               },
               where: {
-                id: dca.id
+                escrowId: dca.escrowId
               }
             })
           }

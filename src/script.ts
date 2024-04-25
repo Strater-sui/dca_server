@@ -16,7 +16,7 @@ import prisma from "./lib/prisma";
   // parse command line arguments
   const params = yargs(process.argv.slice(2))
     .options('action', {
-      choices: ["place", "execute", "close", "transfer"],
+      choices: ["place", "execute", "close", "transfer", "init"],
       demandOption: true,
     })
     .string("recipient")
@@ -34,6 +34,13 @@ import prisma from "./lib/prisma";
 
   try {
     switch (params.action) {
+      case "init":
+        {
+          await prisma.transaction.deleteMany();
+          await prisma.order.deleteMany();
+          await prisma.dca.deleteMany();
+        }
+        break;
       case "place":
         {
           let { input, output, amount, frequency, orders } = params;

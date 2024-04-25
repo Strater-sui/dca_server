@@ -28,7 +28,7 @@ model Dca {
   frequency             Int
   ordersTotal           Int
   ordersExecuted        Int
-  retryCount           Int
+  retryCount            Int
 
   escrowDigest          String
   closeDigest           String?
@@ -39,6 +39,7 @@ model Dca {
   updatedAt             DateTime
 
   orders                Order[]
+  logs                  ExecuteLog[]
 }
 
 model Order {
@@ -65,4 +66,14 @@ model Transaction {
   updatedAt             DateTime
 
   @@unique([transactionHash, action], name: "actionId")
+}
+
+model ExecuteLog {
+  id                    Int      @id @default(autoincrement())
+  escrowId              String
+  digest                String?
+  errorCode             Int      @default(0)
+  createdAt             DateTime @default(now())
+
+  dca                   Dca     @relation(fields: [escrowId], references: [escrowId])
 }

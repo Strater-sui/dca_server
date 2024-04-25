@@ -8,8 +8,8 @@ export const updateExecuteEvent = async (prisma: PrismaClient, event: ExecuteOrd
             data: {
                 escrowId: event.escrow,
                 executeDigest: digest,
-                inAmount: event.withdrawn_y,
-                outAmount: event.spent_x,
+                inAmount: event.spent_x,
+                outAmount: event.withdrawn_y,
                 status: OrderStatus.Successed,
                 createdAt: timestamp,
                 updatedAt: timestamp,

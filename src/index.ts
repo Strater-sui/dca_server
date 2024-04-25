@@ -24,7 +24,6 @@ console.log("Server Start");
 unlock();
 const job = new CronJob("*/1 * * * * *", async function () {
   if (isLocked()) {
-    console.log('Task is already running, skipping.');
     return;
   }
 

@@ -11,6 +11,7 @@ export const DECIMAL_PLACES = 4;
 export const MAX_RETRY_COUNT = 10;
 export const FLOAT_SCALING = 10 ** 9;
 export const TIME_WINDOW = 1000 * 60 * 10;
+export const CHUNK_SIZE = 10;
 
 export const DCA_PACKAGE = process.env.DCA_PACKAGE || "";
 export const DCA_PACKAGE_INITIAL_VERSION = Number(process.env.DCA_PACKAGE_INITIAL_VERSION || "0");

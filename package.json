@@ -6,7 +6,7 @@
     "start": "node dist/index.js",
     "fallback": "node dist/fallback.js",
     "script": "node dist/script.js",
-    "build": "rimraf dist; npx tsc"
+    "build": "rimraf dist; npx prisma generate; npx tsc"
   },
   "devDependencies": {
     "@types/yargs": "^17.0.32",

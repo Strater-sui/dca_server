@@ -7,7 +7,7 @@ import { logger } from "../lib/logger";
 import { extractErrorMessage } from "../utils";
 import { afSwap } from "../lib/aftermath";
 import { Dca } from "@prisma/client";
-import { DCA_PACKAGE } from "../constants";
+import { AF_SLIPPAGE, DCA_PACKAGE } from "../constants";
 import { ErrorCode } from "../type";
 import { getTransaction } from "../getter";
 
@@ -62,7 +62,7 @@ export const executeOrder = async (
             outputType,
             coinInAmount: inAmount,
             coinIn,
-            slippage: 1,
+            slippage: AF_SLIPPAGE,
         });
         if (!coinOut) return undefined;
 

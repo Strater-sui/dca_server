@@ -1,5 +1,7 @@
 import { BCS, getSuiMoveConfig } from "@mysten/bcs";
 import { DECIMAL_PLACES, FLOAT_SCALING } from "./constants";
+import { SuiClient } from "@mysten/sui.js/src/client";
+import { COIN, COINS_TYPE_LIST } from "bucket-protocol-sdk";
 export const bcs_ = new BCS(getSuiMoveConfig());
 
 export const bcs = bcs_
@@ -50,3 +52,30 @@ export function floatBitIntToNumber(value: bigint, decimals = DECIMAL_PLACES) {
 }
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+export async function getCoins(client: SuiClient, owner: string, type: COIN) {
+  let {
+    data: coins,
+    hasNextPage,
+    nextCursor,
+  } = await client.getCoins({
+    owner,
+    coinType: COINS_TYPE_LIST[type],
+  });
+  while (hasNextPage) {
+    const {
+      data: coins_,
+      hasNextPage: hasNextPage_,
+      nextCursor: nextCursor_,
+    } = await client.getCoins({
+      owner,
+      coinType: COINS_TYPE_LIST[type],
+      cursor: nextCursor,
+    });
+    coins.push(...coins_);
+    nextCursor = nextCursor_;
+    hasNextPage = hasNextPage_;
+  }
+
+  return coins;
+}

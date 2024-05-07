@@ -1,7 +1,7 @@
 import { Keypair } from "@mysten/sui.js/cryptography";
 import { TransactionBlock, TransactionObjectArgument } from "@mysten/sui.js/transactions";
 import { BucketClient, getCoinSymbol } from "bucket-protocol-sdk";
-import { dcaClearEscrow, dcaCloseEscrow, dcaExecuteOrder, dcaRepayOrder } from "../lib/operation";
+import { dcaClearEscrow, dcaExecuteOrder, dcaRepayOrder } from "../lib/operation";
 import { SuiClient } from "@mysten/sui.js/client";
 import { logger } from "../lib/logger";
 import { extractErrorMessage } from "../utils";

@@ -1,9 +1,9 @@
 import {
   TransactionArgument,
-  TransactionBlock,
+  Transaction,
   TransactionObjectArgument,
   TransactionResult,
-} from "@mysten/sui.js/transactions";
+} from "@mysten/sui/transactions";
 import {
   ORACLE_OBJECT,
   CLOCK_OBJECT,
@@ -12,11 +12,11 @@ import {
   SUPRA_PRICE_FEEDS,
 } from "bucket-protocol-sdk";
 import { COIN_METADATA, DCA_BUCKET_CONFIG, DCA_CONFIG } from "../config";
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { DCA_CAP } from "../constants";
 
 export function dcaPlaceOrder(
-  tx: TransactionBlock,
+  tx: Transaction,
   inputs: {
     owner: string;
     inputCoin: TransactionObjectArgument;
@@ -45,15 +45,15 @@ export function dcaPlaceOrder(
     typeArguments: [COINS_TYPE_LIST[inputToken], COINS_TYPE_LIST[outputToken]],
     arguments: [
       tx.sharedObjectRef(DCA_CONFIG.DCA_REG),
-      tx.pure(owner, "address"),
+      tx.pure.address(owner),
       inputCoin,
       tx.object(COIN_METADATA[inputToken]),
       tx.object(COIN_METADATA[outputToken]),
-      tx.pure(frequency),
-      tx.pure(orders),
-      tx.pure(priceEnabled),
-      tx.pure(minPrice, "u128"),
-      tx.pure(maxPrice, "u128"),
+      tx.pure.u64(frequency),
+      tx.pure.u64(orders),
+      tx.pure.bool(priceEnabled),
+      tx.pure.u128(minPrice),
+      tx.pure.u128(maxPrice),
       tx.sharedObjectRef(CLOCK_OBJECT),
     ],
   });
@@ -61,7 +61,7 @@ export function dcaPlaceOrder(
 }
 
 export function dcaExecuteOrder(
-  tx: TransactionBlock,
+  tx: Transaction,
   inputs: {
     inputType: string;
     outputType: string;
@@ -84,7 +84,7 @@ export function dcaExecuteOrder(
   return [coinX, receipt];
 }
 export function dcaRepayOrder(
-  tx: TransactionBlock,
+  tx: Transaction,
   inputs: {
     inputType: string;
     outputType: string;
@@ -108,7 +108,7 @@ export function dcaRepayOrder(
 }
 
 export function dcaClearEscrow(
-  tx: TransactionBlock,
+  tx: Transaction,
   inputs: {
     inputType: string;
     outputType: string;
@@ -129,7 +129,7 @@ export function dcaClearEscrow(
 }
 
 export function dcaCloseEscrow(
-  tx: TransactionBlock,
+  tx: Transaction,
   inputs: {
     inputType: string;
     outputType: string;
@@ -140,16 +140,13 @@ export function dcaCloseEscrow(
   const [coinX, coinY] = tx.moveCall({
     target: DCA_CONFIG.targets.closeEscrow,
     typeArguments: [inputType, outputType],
-    arguments: [
-      tx.sharedObjectRef(DCA_CONFIG.DCA_REG),
-      tx.object(escrowId),
-    ],
+    arguments: [tx.sharedObjectRef(DCA_CONFIG.DCA_REG), tx.object(escrowId)],
   });
   return [coinX, coinY];
 }
 
 export function dcaClaimFee(
-  tx: TransactionBlock,
+  tx: Transaction,
   coinSymbol: COIN,
   cap: string,
   amount: number | TransactionArgument,
@@ -160,19 +157,19 @@ export function dcaClaimFee(
     arguments: [
       tx.sharedObjectRef(DCA_CONFIG.DCA_REG),
       tx.object(cap),
-      typeof amount === "number" ? tx.pure(amount, "u64") : amount,
+      typeof amount === "number" ? tx.pure.u64(amount) : amount,
     ],
   });
 }
 
 //Getter
-export function totalEscrows(tx: TransactionBlock) {
+export function totalEscrows(tx: Transaction) {
   tx.moveCall({
     target: DCA_CONFIG.targets.totalEscrows,
     arguments: [tx.sharedObjectRef(DCA_CONFIG.DCA_REG)],
   });
 }
-export function feeBalance(tx: TransactionBlock, coin: COIN) {
+export function feeBalance(tx: Transaction, coin: COIN) {
   tx.moveCall({
     target: DCA_CONFIG.targets.feeBalance,
     typeArguments: [COINS_TYPE_LIST[coin]],
@@ -182,7 +179,7 @@ export function feeBalance(tx: TransactionBlock, coin: COIN) {
 
 //Utils
 export async function getInputCoins(
-  tx: TransactionBlock,
+  tx: Transaction,
   suiClient: SuiClient,
   owner: string,
   coinSymbol: COIN,
@@ -192,7 +189,7 @@ export async function getInputCoins(
   if (coinType === COINS_TYPE_LIST.SUI) {
     return tx.splitCoins(
       tx.gas,
-      amounts.map((amount) => tx.pure(amount, "u64")),
+      amounts.map((amount) => tx.pure.u64(amount)),
     );
   }
 
@@ -208,6 +205,6 @@ export async function getInputCoins(
 
   return tx.splitCoins(
     mainCoin,
-    amounts.map((amount) => tx.pure(amount, "u64")),
+    amounts.map((amount) => tx.pure.u64(amount)),
   );
 }

@@ -18,12 +18,13 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@flowx-finance/sdk": "1.2.1",
     "@mysten/bcs": "^0.11.1",
-    "@mysten/sui.js": "^0.50.1",
+    "@mysten/sui": "^1.2.1",
     "@prisma/client": "^5.12.0",
     "aftermath-ts-sdk": "^1.1.55",
     "axios": "^1.6.8",
-    "bucket-protocol-sdk": "^0.7.22",
+    "bucket-protocol-sdk": "^0.8.8",
     "cron": "^3.1.6",
     "dotenv": "^16.4.5",
     "p-limit": "3.1.0",

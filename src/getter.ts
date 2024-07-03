@@ -1,7 +1,12 @@
-import { SuiClient, SuiObjectResponse, SuiTransactionBlock, SuiTransactionBlockResponse } from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import {
+  SuiClient,
+  SuiObjectResponse,
+  SuiTransactionBlock,
+  SuiTransactionBlockResponse,
+} from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
 import { feeBalance, totalEscrows } from "./lib/operation";
-import { normalizeStructTag, normalizeSuiAddress } from "@mysten/sui.js/utils";
+import { normalizeStructTag, normalizeSuiAddress } from "@mysten/sui/utils";
 import { bcs, extractGenericType, sleep } from "./utils";
 import { DECIMAL_PLACES, DUMMY_ADDRESS } from "./constants";
 import { COIN } from "bucket-protocol-sdk";
@@ -10,7 +15,7 @@ export async function getFeeBalance(
   suiClient: SuiClient,
   type: COIN,
 ): Promise<number> {
-  let tx = new TransactionBlock();
+  let tx = new Transaction();
   feeBalance(tx, type);
   let res = await suiClient.devInspectTransactionBlock({
     sender: DUMMY_ADDRESS,
@@ -44,8 +49,7 @@ export async function getTransaction(
       });
 
       return res;
-    }
-    catch {
+    } catch {
       await sleep(1000);
     }
   }

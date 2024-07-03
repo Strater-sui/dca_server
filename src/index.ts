@@ -1,13 +1,10 @@
-import {
-  Ed25519Keypair,
-  Ed25519PublicKey,
-} from "@mysten/sui.js/keypairs/ed25519";
+import { Ed25519Keypair, Ed25519PublicKey } from "@mysten/sui/keypairs/ed25519";
 import { CronJob } from "cron";
-import * as fs from 'fs';
+import * as fs from "fs";
 import { DCAServer } from "./server";
 
 import { logger } from "./lib/logger";
-const lockFilePath = 'task.lock';
+const lockFilePath = "task.lock";
 
 // (async () => {
 //   dotenv.config();
@@ -43,7 +40,7 @@ function isLocked(): boolean {
 }
 
 function lock(): void {
-  fs.writeFileSync(lockFilePath, '');
+  fs.writeFileSync(lockFilePath, "");
 }
 
 function unlock(): void {
